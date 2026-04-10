@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Keep Awake — Schedule Mockup</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      font-size: 13px;
+      background: #1a1a2e;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      gap: 40px;
+      padding: 40px 20px;
+    }
+
+    h1 {
+      color: #ccc;
+      font-size: 14px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: -20px;
+    }
+
+    /* ── Simulated tray context menu ── */
+    .tray-label {
+      color: #888;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+    }
+
+    .tray-menu {
+      background: #2d2d2d;
+      border: 1px solid #444;
+      border-radius: 4px;
+      min-width: 170px;
+      box-shadow: 4px 6px 18px rgba(0,0,0,.6);
+      overflow: hidden;
+    }
+
+    .tray-menu-item {
+      padding: 7px 14px;
+      color: #ddd;
+      cursor: default;
+      user-select: none;
+      transition: background 0.1s;
+    }
+
+    .tray-menu-item:hover { background: #3a6cf4; color: #fff; }
+    .tray-menu-item.disabled { color: #666; font-weight: 600; cursor: default; }
+    .tray-menu-item.disabled:hover { background: transparent; color: #666; }
+    .tray-menu-item.highlighted { background: #3a6cf4; color: #fff; }
+
+    .tray-separator {
+      border: none;
+      border-top: 1px solid #444;
+      margin: 2px 0;
+    }
+
+    /* ── Dialog wrapper ── */
+    .dialog-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* ── Dialog box ── */
+    .dialog {
+      background: #f0f0f0;
+      border: 1px solid #888;
+      border-radius: 6px;
+      width: 420px;
+      box-shadow: 0 8px 32px rgba(0,0,0,.55);
+      overflow: hidden;
+    }
+
+    .dialog-titlebar {
+      background: linear-gradient(to bottom, #4a7fd4, #2d5db8);
+      color: #fff;
+      padding: 7px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      user-select: none;
+    }
+
+    .dialog-titlebar .title-left {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .dialog-titlebar .icon {
+      width: 14px; height: 14px;
+      background: radial-gradient(circle at 40% 40%, #7eff9a, #00c84a);
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .dialog-close {
+      width: 18px; height: 18px;
+      background: #c42b1c;
+      border-radius: 3px;
+      color: #fff;
+      font-size: 11px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+    }
+
+    .dialog-body {
+      padding: 18px 20px 14px;
+      background: #f0f0f0;
+      color: #222;
+    }
+
+    .dialog-body p.intro {
+      font-size: 12px;
+      color: #444;
+      margin-bottom: 14px;
+      line-height: 1.5;
+    }
+
+    /* ── Option cards ── */
+    .option-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .option-card {
+      background: #fff;
+      border: 2px solid #c8c8c8;
+      border-radius: 5px;
+      padding: 10px 12px;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .option-card:hover {
+      border-color: #4a7fd4;
+      background: #f0f6ff;
+    }
+
+    .option-card.selected {
+      border-color: #3a6cf4;
+      background: #eef3ff;
+    }
+
+    .option-card input[type="radio"] {
+      margin-top: 2px;
+      accent-color: #3a6cf4;
+      flex-shrink: 0;
+    }
+
+    .option-text { flex: 1; }
+
+    .option-title {
+      font-weight: 600;
+      font-size: 12px;
+      color: #111;
+    }
+
+    .option-desc {
+      font-size: 11px;
+      color: #666;
+      margin-top: 2px;
+      line-height: 1.4;
+    }
+
+    /* ── Inline sub-controls ── */
+    .sub-controls {
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .sub-controls label { font-size: 11px; color: #444; }
+
+    .sub-controls input[type="number"],
+    .sub-controls input[type="time"],
+    .sub-controls select {
+      font-size: 11px;
+      padding: 2px 5px;
+      border: 1px solid #aaa;
+      border-radius: 3px;
+      background: #fff;
+      color: #222;
+      width: auto;
+    }
+
+    .sub-controls input[type="number"] { width: 52px; }
+
+    /* ── Day checkboxes ── */
+    .day-row {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+
+    .day-btn {
+      width: 30px; height: 22px;
+      font-size: 10px;
+      font-weight: 600;
+      background: #e0e0e0;
+      border: 1px solid #bbb;
+      border-radius: 3px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      color: #444;
+      user-select: none;
+    }
+
+    .day-btn.on {
+      background: #3a6cf4;
+      border-color: #2a55d4;
+      color: #fff;
+    }
+
+    /* ── Dialog footer ── */
+    .dialog-footer {
+      background: #e4e4e4;
+      border-top: 1px solid #c0c0c0;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .footer-left {
+      display: flex;
+      gap: 8px;
+    }
+
+    .footer-right {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn {
+      padding: 5px 18px;
+      font-size: 12px;
+      border-radius: 3px;
+      cursor: pointer;
+      border: 1px solid #888;
+      font-family: inherit;
+    }
+
+    .btn-primary {
+      background: linear-gradient(to bottom, #4a84e2, #2d5db8);
+      color: #fff;
+      border-color: #1e4a9e;
+    }
+
+    .btn-primary:hover { background: linear-gradient(to bottom, #5a94f2, #3d6dc8); }
+    .btn-secondary { background: #f5f5f5; color: #333; }
+    .btn-secondary:hover { background: #e8e8e8; }
+
+    /* ── Status bar ── */
+    .status-bar {
+      background: #dde;
+      border-top: 1px solid #bbc;
+      padding: 4px 12px;
+      font-size: 10px;
+      color: #555;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .status-left {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .status-dot {
+      width: 7px; height: 7px;
+      background: #00c84a;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .version-badge {
+      font-size: 10px;
+      color: #888;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Keep Awake — UI Mockup</h1>
+
+  <!-- Tray menu -->
+  <div class="dialog-wrapper">
+    <div class="tray-label">System Tray Right-Click Menu</div>
+    <div class="tray-menu">
+      <div class="tray-menu-item disabled">Keep Awake</div>
+      <hr class="tray-separator">
+      <div class="tray-menu-item highlighted">Schedule…</div>
+      <hr class="tray-separator">
+      <div class="tray-menu-item">Quit</div>
+    </div>
+  </div>
+
+  <!-- Schedule dialog -->
+  <div class="dialog-wrapper">
+    <div class="tray-label">Schedule Dialog — appears on click</div>
+    <div class="dialog">
+
+      <div class="dialog-titlebar">
+        <div class="title-left">
+          <span class="icon"></span>
+          Keep Awake — Schedule
+        </div>
+        <div class="dialog-close">✕</div>
+      </div>
+
+      <div class="dialog-body">
+        <p class="intro">Choose when Keep Awake should be active. Settings are saved automatically between sessions.</p>
+
+        <div class="option-group">
+
+          <!-- Option 1: Always On (default) -->
+          <label class="option-card selected">
+            <input type="radio" name="schedule" value="always" checked>
+            <div class="option-text">
+              <div class="option-title">🟢 Always Active <span style="font-weight:400;color:#999;font-size:10px;">(default)</span></div>
+              <div class="option-desc">Keep awake continuously while the app is running. No schedule restrictions.</div>
+            </div>
+          </label>
+
+          <!-- Option 2: Time Window -->
+          <label class="option-card" id="card-window">
+            <input type="radio" name="schedule" value="window">
+            <div class="option-text">
+              <div class="option-title">🕐 Active During Time Window</div>
+              <div class="option-desc">Only keep awake between two specific times of day — perfect for work hours.</div>
+              <div class="sub-controls" id="ctrl-window" style="display:none">
+                <label>From</label>
+                <input type="time" value="09:00">
+                <label>to</label>
+                <input type="time" value="18:00">
+              </div>
+            </div>
+          </label>
+
+          <!-- Option 3: Days of Week -->
+          <label class="option-card" id="card-days">
+            <input type="radio" name="schedule" value="days">
+            <div class="option-text">
+              <div class="option-title">📅 Active on Specific Days</div>
+              <div class="option-desc">Choose which days of the week the app should prevent sleep, with optional time window.</div>
+              <div id="ctrl-days" style="display:none">
+                <div class="day-row">
+                  <div class="day-btn on">Mo</div>
+                  <div class="day-btn on">Tu</div>
+                  <div class="day-btn on">We</div>
+                  <div class="day-btn on">Th</div>
+                  <div class="day-btn on">Fr</div>
+                  <div class="day-btn">Sa</div>
+                  <div class="day-btn">Su</div>
+                </div>
+                <div class="sub-controls" style="margin-top:8px">
+                  <label>Hours:</label>
+                  <input type="time" value="09:00">
+                  <label>–</label>
+                  <input type="time" value="18:00">
+                </div>
+              </div>
+            </div>
+          </label>
+
+          <!-- Option 4: Timer -->
+          <label class="option-card" id="card-timer">
+            <input type="radio" name="schedule" value="timer">
+            <div class="option-text">
+              <div class="option-title">⏱️ One-Time Timer</div>
+              <div class="option-desc">Stay awake for a fixed duration from now, then automatically stop.</div>
+              <div class="sub-controls" id="ctrl-timer" style="display:none">
+                <label>Keep awake for</label>
+                <input type="number" value="2" min="1" max="24">
+                <select>
+                  <option>hours</option>
+                  <option>minutes</option>
+                </select>
+                <label>, then stop</label>
+              </div>
+            </div>
+          </label>
+
+        </div>
+      </div>
+
+      <div class="status-bar">
+        <div class="status-left">
+          <span class="status-dot"></span>
+          Currently active · Always Active
+        </div>
+        <span class="version-badge">v1.1</span>
+      </div>
+
+      <div class="dialog-footer">
+        <div class="footer-left">
+          <button class="btn btn-secondary">About</button>
+        </div>
+        <div class="footer-right">
+          <button class="btn btn-secondary">Cancel</button>
+          <button class="btn btn-primary">Apply</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // Make cards interactive in the mockup
+    const cards = document.querySelectorAll('.option-card');
+    const subControls = {
+      'window': document.getElementById('ctrl-window'),
+      'days':   document.getElementById('ctrl-days'),
+      'timer':  document.getElementById('ctrl-timer'),
+    };
+
+    cards.forEach(card => {
+      card.addEventListener('click', () => {
+        cards.forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        const val = card.querySelector('input[type=radio]').value;
+        Object.entries(subControls).forEach(([k, el]) => {
+          if (k === 'days') {
+            el.style.display = (k === val) ? 'block' : 'none';
+          } else {
+            el.style.display = (k === val) ? 'flex' : 'none';
+          }
+        });
+      });
+    });
+
+    // Day toggle buttons
+    document.querySelectorAll('.day-btn').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        btn.classList.toggle('on');
+      });
+    });
+  </script>
+
+</body>
+</html>
